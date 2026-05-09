@@ -4,9 +4,8 @@ Restaurant analytics dashboard showing bestsellers, low-margin, and low-performi
 
 ## 🚀 Live Demo
 
-- **Frontend (Website):** https://your-app.netlify.app
+- **Frontend (Website):** https://melodic-moonbeam-5dde8a.netlify.app/
 - **Backend API:** https://menu-dashboard-api.onrender.com
-
 ## 📊 Features
 
 - KPI Dashboard (Total items, orders, revenue)
