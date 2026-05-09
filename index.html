@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Menu Dashboard</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        .card { background: white; padding: 20px; margin: 10px; border-radius: 10px; display: inline-block; min-width: 150px; }
+        .container { display: flex; flex-wrap: wrap; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        button { margin: 5px; padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        input { padding: 10px; margin: 5px; width: 200px; }
+        .tab { display: none; }
+        .active-tab { display: block; }
+    </style>
+</head>
+<body>
+    <h1>🍽️ Menu Intelligence Dashboard</h1>
+    
+    <div>
+        <button onclick="showTab('dashboard')">Dashboard</button>
+        <button onclick="showTab('insights')">Insights</button>
+        <button onclick="showTab('search')">Search</button>
+    </div>
+
+    <div id="dashboard" class="tab active-tab">
+        <div class="container" id="kpi"></div>
+        <h2>🏆 Bestsellers</h2>
+        <div id="bestsellers"></div>
+    </div>
+
+    <div id="insights" class="tab">
+        <h2>⚠️ Low Margin Items</h2>
+        <div id="lowMargin"></div>
+        <h2>📉 Low Performing Items</h2>
+        <div id="lowPerforming"></div>
+    </div>
+
+    <div id="search" class="tab">
+        <input type="text" id="searchInput" placeholder="Search menu...">
+        <button onclick="searchItems()">Search</button>
+        <div id="searchResults"></div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:8000/api';
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active-tab'));
+            document.getElementById(tabName).classList.add('active-tab');
+            if (tabName === 'dashboard') loadDashboard();
+            if (tabName === 'insights') loadInsights();
+        }
+        
+        async function loadDashboard() {
+            const kpi = await fetch(API + '/kpi').then(r => r.json());
+            const bestsellers = await fetch(API + '/bestsellers').then(r => r.json());
+            
+            document.getElementById('kpi').innerHTML = `
+                <div class="card"><h3>Total Items</h3><h2>${kpi.total_items}</h2></div>
+                <div class="card"><h3>Total Orders</h3><h2>${kpi.total_orders}</h2></div>
+                <div class="card"><h3>Revenue</h3><h2>$${kpi.total_revenue}</h2></div>
+            `;
+            
+            document.getElementById('bestsellers').innerHTML = `
+                <table>${bestsellers.map(item => `<tr><td>${item.name}</td><td>${item.sales} sold</td><td>$${item.price}</td></tr>`).join('')}</table>
+            `;
+        }
+        
+        async function loadInsights() {
+            const lowMargin = await fetch(API + '/low-margin').then(r => r.json());
+            const lowPerforming = await fetch(API + '/low-performing').then(r => r.json());
+            
+            document.getElementById('lowMargin').innerHTML = `
+                <table>${lowMargin.map(item => `<tr><td>${item.name}</td><td>$${item.price}</td></tr>`).join('') || '<tr><td>No low margin items</td></tr>'}</table>
+            `;
+            
+            document.getElementById('lowPerforming').innerHTML = `
+                <table>${lowPerforming.map(item => `<tr><td>${item.name}</td><td>${item.sales} sold</td></tr>`).join('')}</table>
+            `;
+        }
+        
+        async function searchItems() {
+            const q = document.getElementById('searchInput').value;
+            const results = await fetch(API + '/search?q=' + q).then(r => r.json());
+            document.getElementById('searchResults').innerHTML = `
+                <table>${results.map(item => `<tr><td>${item.name}</td><td>$${item.price}</td><td>${item.sales} sold</td></tr>`).join('') || '<tr><td>No results</td></tr>'}</table>
+            `;
+        }
+        
+        loadDashboard();
+    </script>
+</body>
+</html>
